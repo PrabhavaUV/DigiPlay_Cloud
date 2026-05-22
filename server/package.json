@@ -11,6 +11,7 @@
   "author": "College Project",
   "license": "MIT",
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1045.0",
     "aedes": "^0.51.1",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",

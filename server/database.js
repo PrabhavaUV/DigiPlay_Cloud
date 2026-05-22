@@ -13,7 +13,14 @@ if (dbUrl.startsWith('sqlite')) {
     });
 } else {
     sequelize = new Sequelize(dbUrl, {
-        logging: false
+        dialect: 'postgres',
+        logging: false,
+        dialectOptions: {
+            ssl: {
+                require: true,
+                rejectUnauthorized: false
+            }
+        }
     });
 }
 
