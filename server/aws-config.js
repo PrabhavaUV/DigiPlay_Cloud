@@ -6,7 +6,7 @@ const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client
  */
 
 const region = "ap-southeast-2"; // Updated to match your Sydney infrastructure
-const secretName = "digiplay/prod/config";
+const secretName = "digiplay/prod/config-v2";
 
 const client = new SecretsManagerClient({ region });
 

@@ -3,6 +3,7 @@ const path = require('path');
 const { publishToDevice } = require('./aws-iot');
 const { getSecrets } = require('./aws-config');
 const cookieParser = require('cookie-parser');
+const nunjucks = require('nunjucks');
 
 /**
  * STARTUP WRAPPER

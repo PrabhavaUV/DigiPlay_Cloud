@@ -17,11 +17,11 @@
 // ─── CONFIGURATION ───────────────────────────────────────────
 const char* AWS_IOT_ENDPOINT = "YOUR_IOT_ENDPOINT_HERE-ats.iot.ap-southeast-2.amazonaws.com";
 const int   MQTT_PORT   = 8883; // AWS IoT Core requires port 8883 for MQTT
-const char* DEVICE_ID   = "DP002";
+const char* DEVICE_ID   = "DP001";
 
 // WiFi Credentials
-const char* WIFI_SSID   = "Abcd1234";
-const char* WIFI_PASS   = "Abcd1234";
+const char* WIFI_SSID   = "Prince";
+const char* WIFI_PASS   = "1234567890";
 
 // ─── AWS IOT CORE CERTS ──────────────────────────────────────
 // Amazon Root CA 1
@@ -134,7 +134,7 @@ void setupWiFi() {
     ledBlink(1);
 
     Serial.println("[WiFi] Connecting to: " + String(WIFI_SSID));
-    displayStatus("Connecting: Airtel..");
+    displayStatus("Connecting: " + String(WIFI_SSID));
     
     WiFi.begin(WIFI_SSID, WIFI_PASS);
     
