@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { IoTDataPlaneClient, PublishCommand } = require("@aws-sdk/client-iot-data-plane");
 
 // The AWS region your IoT Core is deployed in.
