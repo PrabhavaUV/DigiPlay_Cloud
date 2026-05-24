@@ -32,8 +32,7 @@ async function publishToDevice(deviceId, content) {
         const command = new PublishCommand({
             topic,
             payload: Buffer.from(payload),
-            qos: 1,
-            retain: true
+            qos: 1
         });
         await iotClient.send(command);
         console.log(`[AWS IoT] Successfully published to ${topic}`);
