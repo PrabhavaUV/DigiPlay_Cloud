@@ -37,6 +37,7 @@ This guide provides a professional walkthrough for deploying the **DigiPlay Esse
     *   `DATABASE_URL`: (Temporary value, update after Phase 3)
     *   `SECRET_KEY`: (Generate via `openssl rand -hex 32`)
     *   `APP_API_KEY`: (Your secure mobile app key)
+    *   `AWS_IOT_ENDPOINT`: (Your unique ATS endpoint from IoT Core Settings)
 5.  **Secret Name**: `digiplay/prod/config`.
 6.  **Store**: Click **Store**.
 

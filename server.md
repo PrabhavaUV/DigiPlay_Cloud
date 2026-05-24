@@ -47,7 +47,9 @@ The dashboard uses HTTP cookies for authentication:
 Refer to `cloud_setup.md` for a complete guide on deploying this Node.js app to an AWS EC2 instance, connecting to AWS RDS, and managing credentials securely with AWS Secrets Manager.
 
 ### Required Environment Variables (.env)
-If running locally, you must provide a `.env` file containing:
+If running locally (or without Secrets Manager), you must provide a `.env` file containing:
 - `AWS_IOT_ENDPOINT`: Your unique AWS IoT Data ATS endpoint (e.g., `xxx-ats.iot.ap-southeast-2.amazonaws.com`).
 - AWS Credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) if not running on an EC2 instance with an IAM Role.
-- `DATABASE_URL`, `SECRET_KEY`, and `APP_API_KEY` (if not using AWS Secrets Manager).
+- `DATABASE_URL`, `SECRET_KEY`, and `APP_API_KEY`.
+
+In production, all of these (except AWS Credentials) should be stored securely in **AWS Secrets Manager** under `digiplay/prod/config`.

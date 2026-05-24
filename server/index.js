@@ -17,6 +17,7 @@ async function startServer() {
         if (secrets.DATABASE_URL) process.env.DATABASE_URL = secrets.DATABASE_URL;
         if (secrets.SECRET_KEY) process.env.SECRET_KEY = secrets.SECRET_KEY;
         if (secrets.APP_API_KEY) process.env.APP_API_KEY = secrets.APP_API_KEY;
+        if (secrets.AWS_IOT_ENDPOINT) process.env.AWS_IOT_ENDPOINT = secrets.AWS_IOT_ENDPOINT;
     }
 
     // 2. Initialize DB and Models (Now using Cloud Secrets)
