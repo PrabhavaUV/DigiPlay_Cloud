@@ -15,7 +15,7 @@
 #include <WiFiClientSecure.h>
 
 // ─── CONFIGURATION ───────────────────────────────────────────
-const char* AWS_IOT_ENDPOINT = "YOUR_IOT_ENDPOINT_HERE-ats.iot.ap-southeast-2.amazonaws.com";
+const char* AWS_IOT_ENDPOINT = "a1rlzrwa4e7p0a-ats.iot.ap-southeast-2.amazonaws.com";
 const int   MQTT_PORT   = 8883; // AWS IoT Core requires port 8883 for MQTT
 const char* DEVICE_ID   = "DP001";
 
@@ -134,7 +134,7 @@ void setupWiFi() {
     ledBlink(1);
 
     Serial.println("[WiFi] Connecting to: " + String(WIFI_SSID));
-    displayStatus("Connecting: " + String(WIFI_SSID));
+    displayStatus("Connecting: "+ String(WIFI_SSID));
     
     WiFi.begin(WIFI_SSID, WIFI_PASS);
     

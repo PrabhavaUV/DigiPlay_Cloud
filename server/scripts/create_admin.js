@@ -1,7 +1,16 @@
-const { Admin, sequelize } = require('../models');
-const { hashPassword } = require('../auth');
+const { getSecrets } = require('../aws-config');
 
 async function createAdmin() {
+    console.log("[Seed] Fetching database config...");
+    const secrets = await getSecrets();
+    if (secrets && secrets.DATABASE_URL) {
+        process.env.DATABASE_URL = secrets.DATABASE_URL;
+    }
+
+    // Require models AFTER env is set
+    const { Admin, sequelize } = require('../models');
+    const { hashPassword } = require('../auth');
+
     await sequelize.sync(); // Ensure tables are created
     const username = process.argv[2] || 'admin';
     const password = process.argv[3] || 'securepass123';
