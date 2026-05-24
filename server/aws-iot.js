@@ -25,7 +25,7 @@ async function publishToDevice(deviceId, content) {
     const topic = `digiplay/devices/${deviceId}/content`;
     const payload = JSON.stringify({
         content,
-        checksum: Date.now().toString().substring(0, 8)
+        checksum: Date.now().toString().substring(5)
     });
 
     try {
