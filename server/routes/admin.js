@@ -1,6 +1,7 @@
 const express = require('express');
 const { UpdateRequest, Device } = require('../models');
-const { requireAdminRequire } = require('../auth');
+const { requireAdmin } = require('../auth');
+const { publishToDevice } = require('../aws-iot');
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const router = express.Router();
  * GET /api/admin/requests
  * Fetches all update requests for administrative review.
  */
-router.get('/requests', requireAdminRequire, async (req, res) => {
+router.get('/requests', requireAdmin, async (req, res) => {
     try {
         const list = await UpdateRequest.findAll();
         res.json(list);
@@ -21,7 +22,7 @@ router.get('/requests', requireAdminRequire, async (req, res) => {
  * POST /api/admin/requests/:id/approve
  * Approves a pending request and broadcasts the update via MQTT.
  */
-router.post('/requests/:id/approve', async (req, res) => {
+router.post('/requests/:id/approve', requireAdmin, async (req, res) => {
     const reqId = req.params.id;
     const { admin_notes } = req.body || {};
 
@@ -40,14 +41,8 @@ router.post('/requests/:id/approve', async (req, res) => {
             device.current_content = updateReq.new_content;
             await device.save();
 
-            // Broadcast new content to hardware via MQTT
-            const aedes = req.app.get('mqtt');
-            const topic = `digiplay/devices/${device.id}/content`;
-            const payload = JSON.stringify({
-                content: device.current_content,
-                checksum: Date.now().toString().substring(0, 8)
-            });
-            aedes.publish({ topic, payload, qos: 1, retain: true });
+            // Broadcast new content to hardware via AWS IoT Core
+            await publishToDevice(device.id, device.current_content);
         }
         
         res.redirect('/dashboard');
@@ -61,7 +56,7 @@ router.post('/requests/:id/approve', async (req, res) => {
  * POST /api/admin/requests/:id/reject
  * Rejects a pending request.
  */
-router.post('/requests/:id/reject', async (req, res) => {
+router.post('/requests/:id/reject', requireAdmin, async (req, res) => {
     const reqId = req.params.id;
     const { admin_notes } = req.body || {};
 
@@ -81,4 +76,3 @@ router.post('/requests/:id/reject', async (req, res) => {
 });
 
 module.exports = router;
-

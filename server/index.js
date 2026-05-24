@@ -1,9 +1,8 @@
 const express = require('express');
-const nunjucks = require('nunjucks');
-const aedes = require('aedes')();
-const net = require('net');
 const path = require('path');
+const { publishToDevice } = require('./aws-iot');
 const { getSecrets } = require('./aws-config');
+const cookieParser = require('cookie-parser');
 
 /**
  * STARTUP WRAPPER
@@ -14,27 +13,15 @@ async function startServer() {
     // 1. Fetch Cloud Secrets
     const secrets = await getSecrets();
     if (secrets) {
-        process.env.DATABASE_URL = secrets.DATABASE_URL || process.env.DATABASE_URL;
-        process.env.SECRET_KEY = secrets.SECRET_KEY || process.env.SECRET_KEY;
-        process.env.APP_API_KEY = secrets.APP_API_KEY || process.env.APP_API_KEY;
+        if (secrets.DATABASE_URL) process.env.DATABASE_URL = secrets.DATABASE_URL;
+        if (secrets.SECRET_KEY) process.env.SECRET_KEY = secrets.SECRET_KEY;
+        if (secrets.APP_API_KEY) process.env.APP_API_KEY = secrets.APP_API_KEY;
     }
 
     // 2. Initialize DB and Models (Now using Cloud Secrets)
     const db = require('./database');
     const { UpdateRequest, Device, Admin } = require('./models');
-    const { generateDeviceToken, verifyPassword, createAccessToken } = require('./auth');
-
-    /**
-     * -------------------------------------------------------------------
-     * MQTT BROKER CONFIGURATION
-     * -------------------------------------------------------------------
-     */
-    const mqttServer = net.createServer(aedes.handle);
-    const mqttPort = 1883;
-
-    mqttServer.listen(mqttPort, '0.0.0.0', () => {
-        console.log(`[MQTT] Broker is running on port ${mqttPort}`);
-    });
+    const { verifyPassword, createAccessToken, requireAdmin } = require('./auth');
 
     /**
      * -------------------------------------------------------------------
@@ -42,9 +29,9 @@ async function startServer() {
      * -------------------------------------------------------------------
      */
     const app = express();
-    app.set('mqtt', aedes);
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+    app.use(cookieParser());
     app.use('/static', express.static(path.join(__dirname, 'static')));
 
     nunjucks.configure('templates', {
@@ -56,41 +43,29 @@ async function startServer() {
 
     /**
      * -------------------------------------------------------------------
-     * MQTT EVENT HANDLERS
+     * AWS IOT PRESENCE WEBHOOK
      * -------------------------------------------------------------------
+     * Setup an AWS IoT Core Rule to POST to this endpoint when devices
+     * connect or disconnect. Topic: $aws/events/presence/+/+
      */
-    aedes.on('clientReady', async (client) => {
-        console.log(`[MQTT] Presence: Client ${client.id} connected`);
-        if (client.id.startsWith('DigiPlayClient-')) {
-            const deviceId = client.id.replace('DigiPlayClient-', '');
+    app.post('/api/webhooks/iot-presence', async (req, res) => {
+        const { clientId, eventType } = req.body;
+        // eventType will be 'connected' or 'disconnected'
+        if (clientId && clientId.startsWith('DigiPlayClient-')) {
+            const deviceId = clientId.replace('DigiPlayClient-', '');
             try {
                 const device = await Device.findByPk(deviceId);
                 if (device) {
-                    device.is_online = true;
-                    device.last_seen = new Date();
+                    device.is_online = (eventType === 'connected');
+                    if (device.is_online) device.last_seen = new Date();
                     await device.save();
-                    console.log(`[Presence] Device ${deviceId} is now ONLINE`);
+                    console.log(`[AWS IoT Presence] Device ${deviceId} is now ${device.is_online ? 'ONLINE' : 'OFFLINE'}`);
                 }
             } catch (err) {
-                console.error(`[Presence] Error updating device ${deviceId}:`, err);
+                console.error(`[AWS IoT Presence] Error updating device ${deviceId}:`, err);
             }
         }
-    });
-
-    aedes.on('clientDisconnect', async (client) => {
-        if (client.id && client.id.startsWith('DigiPlayClient-')) {
-            const deviceId = client.id.replace('DigiPlayClient-', '');
-            try {
-                const device = await Device.findByPk(deviceId);
-                if (device) {
-                    device.is_online = false;
-                    await device.save();
-                    console.log(`[Presence] Device ${deviceId} is now OFFLINE`);
-                }
-            } catch (err) {
-                console.error(`[Presence] Error updating disconnect status for ${deviceId}:`, err);
-            }
-        }
+        res.sendStatus(200);
     });
 
     /**
@@ -101,26 +76,32 @@ async function startServer() {
     app.use('/api/admin', require('./routes/admin'));
     app.use('/api/devices', require('./routes/devices'));
     app.use('/api/requests', require('./routes/requests'));
-    app.use('/api/esp32', require('./routes/esp32'));
 
-    app.get('/', (req, res) => res.redirect('/login'));
+
+    app.get('/', (req, res) => res.redirect('/dashboard'));
     app.get('/login', (req, res) => res.render('login.html'));
 
-    app.post('/auth/login', async (req, res) => {
+    app.post('/login', async (req, res) => {
         const { username, password } = req.body;
         try {
             const admin = await Admin.findOne({ where: { username } });
             if (!admin || !(await verifyPassword(password, admin.password_hash))) {
-                return res.status(401).json({ detail: "Invalid credentials" });
+                return res.render('login.html', { error: 'Invalid username or password' });
             }
             const token = createAccessToken({ sub: admin.username });
-            res.json({ access_token: token });
+            res.cookie('auth_token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
+            res.redirect('/dashboard');
         } catch (error) {
-            res.status(500).json({ detail: "Authentication error" });
+            res.render('login.html', { error: 'Authentication error occurred' });
         }
     });
 
-    app.get('/dashboard', async (req, res) => {
+    app.get('/logout', (req, res) => {
+        res.clearCookie('auth_token');
+        res.redirect('/login');
+    });
+
+    app.get('/dashboard', requireAdmin, async (req, res) => {
         const device_count = await Device.count();
         const online_count = await Device.count({ where: { is_online: true } });
         const pending_requests = await UpdateRequest.findAll({
@@ -130,50 +111,39 @@ async function startServer() {
         res.render('dashboard.html', { device_count, online_count, pending_requests });
     });
 
-    app.get('/devices', async (req, res) => {
+    app.get('/devices', requireAdmin, async (req, res) => {
         const devices = await Device.findAll();
         res.render('devices.html', {
             devices,
-            new_device_id: req.query.new_id,
-            raw_token: req.query.token
+            new_device_id: req.query.new_id
         });
     });
 
-    app.post('/devices/new', async (req, res) => {
+    app.post('/devices/new', requireAdmin, async (req, res) => {
         const { name, description } = req.body;
-        const { raw, hashed } = generateDeviceToken();
-        const device = await Device.create({ name, description, device_token: hashed });
-        res.redirect(`/devices?new_id=${device.id}&token=${raw}`);
+        const device = await Device.create({ name, description });
+        res.redirect(`/devices?new_id=${device.id}`);
     });
 
-    app.post('/devices/push', async (req, res) => {
+    app.post('/devices/push', requireAdmin, async (req, res) => {
         const { deviceId, content } = req.body;
         const device = await Device.findByPk(deviceId);
         if (device) {
             device.current_content = content;
             await device.save();
 
-            const payload = JSON.stringify({
-                content,
-                checksum: Date.now().toString().substring(0, 8)
-            });
-            aedes.publish({
-                topic: `digiplay/devices/${device.id}/content`,
-                payload,
-                qos: 1,
-                retain: true
-            });
+            await publishToDevice(device.id, content);
         }
         res.redirect('/devices');
     });
 
-    app.post('/devices/delete', async (req, res) => {
+    app.post('/devices/delete', requireAdmin, async (req, res) => {
         const { deviceId } = req.body;
         await Device.destroy({ where: { id: deviceId } });
         res.redirect('/devices');
     });
 
-    app.get('/requests', async (req, res) => {
+    app.get('/requests', requireAdmin, async (req, res) => {
         const requests = await UpdateRequest.findAll({
             include: [{ model: Device, as: 'device' }],
             order: [['created_at', 'DESC']]

@@ -16,7 +16,6 @@ const Device = sequelize.define('Device', {
     id: { type: DataTypes.STRING(10), primaryKey: true },
     name: { type: DataTypes.STRING(200), allowNull: false },
     description: { type: DataTypes.TEXT },
-    device_token: { type: DataTypes.STRING(256), unique: true, allowNull: false },
     current_content: { type: DataTypes.TEXT, allowNull: false, defaultValue: 'Hello!' },
     is_online: { type: DataTypes.BOOLEAN, defaultValue: false },
     last_seen: { type: DataTypes.DATE }

@@ -14,7 +14,12 @@
             <p style="color: var(--text-secondary); margin-top: 0.5rem; font-weight: 600; letter-spacing: 1px;">SYSTEM ADMINISTRATION</p>
         </div>
         
-        <form action="/dashboard" method="GET">
+        <form action="/login" method="POST">
+            {% if error %}
+            <div style="color: #e74c3c; background: #fdf0ed; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; border: 1px solid #fad5ce;">
+                {{ error }}
+            </div>
+            {% endif %}
             <div class="form-group">
                 <label>Admin Access Key</label>
                 <input type="text" name="username" class="form-control" required value="admin">

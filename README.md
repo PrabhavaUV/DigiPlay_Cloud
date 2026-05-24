@@ -84,7 +84,6 @@ graph TD
 ## ☁️ Cloud & AWS Deployment
 
 DigiPlay is designed to scale. For production environments, refer to our detailed deployment documentation:
-* [AWS Architecture Guide](./aws_architecture_guide.md): High-level overview of managed services (Fargate, IoT Core, RDS).
 * [Cloud Setup Guide](./cloud_setup.md): Step-by-step instructions to configure networking, IAM, compute, and security on AWS.
 
 ---

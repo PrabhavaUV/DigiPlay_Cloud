@@ -12,14 +12,37 @@
 #include <Wire.h>
 #include <Preferences.h>
 
-// ─── CONFIGURATION ───────────────────────────────────────────
-const char* MQTT_BROKER = "52.62.31.60"; // User specified IP
-const int   MQTT_PORT   = 1883;
-const char* DEVICE_ID   = "DP002";       // User specified ID
+#include <WiFiClientSecure.h>
 
-// WiFi Credentials (User specified)
+// ─── CONFIGURATION ───────────────────────────────────────────
+const char* AWS_IOT_ENDPOINT = "YOUR_IOT_ENDPOINT_HERE-ats.iot.ap-southeast-2.amazonaws.com";
+const int   MQTT_PORT   = 8883; // AWS IoT Core requires port 8883 for MQTT
+const char* DEVICE_ID   = "DP002";
+
+// WiFi Credentials
 const char* WIFI_SSID   = "Abcd1234";
-const char* WIFI_PASS   = "Abcd1234"; // Replace with actual password
+const char* WIFI_PASS   = "Abcd1234";
+
+// ─── AWS IOT CORE CERTS ──────────────────────────────────────
+// Amazon Root CA 1
+const char* AWS_CERT_CA = \
+"-----BEGIN CERTIFICATE-----\n" \
+"MIIDQTCCAimgAwIBAgITBmyfz5m/jAo54vB4ikPmljZbyjANBgkqhkiG9w0BAQsF\n" \
+"ADA5MQswCQYDVQQGEwJVUzEPMA0GA1UEChMGQW1hem9uMRkwFwYDVQQDExBBbWF6\n" \
+"... (Paste the rest of your Amazon Root CA 1 here)\n" \
+"-----END CERTIFICATE-----\n";
+
+// Device Certificate
+const char* AWS_CERT_CRT = \
+"-----BEGIN CERTIFICATE-----\n" \
+"... (Paste your Device Certificate here)\n" \
+"-----END CERTIFICATE-----\n";
+
+// Device Private Key
+const char* AWS_CERT_PRIVATE = \
+"-----BEGIN RSA PRIVATE KEY-----\n" \
+"... (Paste your Device Private Key here)\n" \
+"-----END RSA PRIVATE KEY-----\n";
 
 // ─── HARDWARE PINS ───────────────────────────────────────────
 
@@ -36,7 +59,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 // ─── GLOBALS ─────────────────────────────────────────────────
 Preferences preferences;
-WiFiClient espClient;
+WiFiClientSecure espClient;
 PubSubClient mqtt(espClient);
 
 String currentContent  = "Initializing...";
@@ -123,6 +146,11 @@ void setupWiFi() {
     Serial.println("\n[WiFi] Connected: " + WiFi.localIP().toString());
     displayStatus("WiFi Connected!");
     ledBlink(2);
+
+    // Configure Secure Client for AWS IoT Core
+    espClient.setCACert(AWS_CERT_CA);
+    espClient.setCertificate(AWS_CERT_CRT);
+    espClient.setPrivateKey(AWS_CERT_PRIVATE);
 }
 
 // ─── MQTT CALLBACK (The Core Update Logic) ───────────────────
@@ -190,7 +218,7 @@ void setup() {
     
     setupWiFi();
     
-    mqtt.setServer(MQTT_BROKER, MQTT_PORT);
+    mqtt.setServer(AWS_IOT_ENDPOINT, MQTT_PORT);
     mqtt.setCallback(mqttCallback);
 }
 
