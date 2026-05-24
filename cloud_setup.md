@@ -67,7 +67,7 @@ This guide provides a professional walkthrough for deploying the **DigiPlay Esse
 2.  **Things**: Go to **Manage** -> **Things** -> **Create things**.
 3.  **Name**: `DigiPlay_Display_01`.
 4.  **Certificates**: Select **Auto-generate a new certificate**.
-5.  **Policy**: Create a policy named `DigiPlay_Policy` allowing `iot:Connect`, `iot:Subscribe`, and `iot:Publish`.
+5.  **Policy**: Create a policy named `DigiPlay_Policy` allowing `iot:Connect`, `iot:Subscribe`, `iot:Receive`, and `iot:Publish`.
 6.  **Download**: **CRITICAL**. Download the Device Certificate, Private Key, and Amazon Root CA 1. You will need these for the ESP32.
 
 ---
