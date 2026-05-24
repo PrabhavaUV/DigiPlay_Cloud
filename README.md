@@ -8,9 +8,9 @@
 
 ## 🌟 Key Features
 
-- **Real-Time Display Updates**: Leverage MQTT protocol for instantaneous synchronization of display content to remote edge devices without manual intervention.
+- **Real-Time Display Updates**: Leverage AWS IoT Core MQTT for instantaneous synchronization of display content to remote edge devices globally.
 - **Admin Approval Workflow**: Ensures complete control. Mobile users request content changes, but devices only update after an administrator explicitly approves the request via the web dashboard.
-- **Zero-Touch Provisioning**: ESP32 firmware features built-in `WiFiManager` to provide a captive portal for local Wi-Fi configuration out of the box.
+- **Enterprise-Ready Infrastructure**: Built natively for AWS, integrating EC2, RDS, Secrets Manager, and AWS IoT Core.
 - **Bi-Directional Status Tracking**: The server inherently tracks the active `Online`/`Offline` presence of each hardware device in real-time.
 - **Enterprise-Ready Infrastructure**: Includes configuration blueprints for deploying on AWS (Fargate, IoT Core, RDS, Secrets Manager).
 
@@ -29,7 +29,7 @@ graph TD
     subgraph Central Server Node.js
         B -->|POST /api/requests| C[(PostgreSQL DB)]
         D[Admin Web Dashboard] -->|Approves Request| C
-        C -->|Publishes Payload| E[Aedes MQTT Broker]
+        C -->|Publishes Payload| E[AWS IoT Core MQTT]
     end
 
     subgraph Edge Hardware ESP32
@@ -53,9 +53,9 @@ graph TD
 
 | Component | Directory | Tech Stack | Description |
 | :--- | :--- | :--- | :--- |
-| **Backend Server** | `/server` | Node.js, Express, Aedes MQTT, Sequelize | Hosts the REST APIs, Admin HTML templates (Nunjucks), and the MQTT Broker. |
+| **Backend Server** | `/server` | Node.js, Express, AWS SDK, Sequelize | Hosts the REST APIs, Admin HTML templates (Nunjucks), and pushes to AWS IoT. |
 | **Mobile App** | `/DigiPlay_App` | Android (Java), OkHttp | Mobile interface for users to look up devices and request display content changes. |
-| **Device Firmware** | `/digiplay_firmware` | C++ (Arduino IDE), PubSubClient | Lightweight firmware for the ESP32 to connect to Wi-Fi and the MQTT broker. |
+| **Device Firmware** | `/digiplay_firmware` | C++ (Arduino IDE), PubSubClient | Secure firmware for the ESP32 connecting to AWS IoT Core via X.509 certs. |
 
 ---
 
@@ -70,9 +70,10 @@ graph TD
 
 ### 2. Hardware (ESP32) Setup
 1. Open `/digiplay_firmware/digiplay_firmware.ino` in the Arduino IDE.
-2. Update the `MQTT_BROKER` IP address to point to your Node.js server.
-3. Flash the firmware to your ESP32.
-4. On first boot, connect to the `DigiPlay-XXXX` Wi-Fi hotspot to configure local internet access.
+2. Hardcode your `WIFI_SSID` and `WIFI_PASS`.
+3. Provide the `AWS_IOT_ENDPOINT` from your AWS Console.
+4. Paste the 3 AWS Certificates (Root CA, Device Cert, Private Key) securely into the code using `\n" \` formatting.
+5. Flash the firmware to your ESP32.
 
 ### 3. Mobile App Deployment
 1. Open `/DigiPlay_App` in Android Studio.

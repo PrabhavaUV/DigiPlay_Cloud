@@ -13,6 +13,7 @@ DigiPlay is an IoT platform enabling remote control of ESP32-based digital name 
 - **Backend Framework:** Express.js
 - **Database Layer:** PostgreSQL (via Sequelize ORM) for persistent storage.
 - **Communication Protocol:** MQTT via AWS IoT Core (using `@aws-sdk/client-iot-data-plane`).
+- **Secrets Management:** AWS Secrets Manager (using `@aws-sdk/client-secrets-manager`).
 - **Frontend Layer:** Nunjucks Templating Engine with Glassmorphism UI.
 
 ## 3. Database Schema
@@ -44,3 +45,9 @@ The dashboard uses HTTP cookies for authentication:
 ## 5. Deployment
 
 Refer to `cloud_setup.md` for a complete guide on deploying this Node.js app to an AWS EC2 instance, connecting to AWS RDS, and managing credentials securely with AWS Secrets Manager.
+
+### Required Environment Variables (.env)
+If running locally, you must provide a `.env` file containing:
+- `AWS_IOT_ENDPOINT`: Your unique AWS IoT Data ATS endpoint (e.g., `xxx-ats.iot.ap-southeast-2.amazonaws.com`).
+- AWS Credentials (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) if not running on an EC2 instance with an IAM Role.
+- `DATABASE_URL`, `SECRET_KEY`, and `APP_API_KEY` (if not using AWS Secrets Manager).
