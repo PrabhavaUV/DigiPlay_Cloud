@@ -82,7 +82,7 @@ Instead of storing keys in a `.env` file on the server, we use AWS Secrets Manag
         *   `DATABASE_URL`: `postgresql://postgres:YOUR_PASSWORD@YOUR_RDS_ENDPOINT:5432/digiplay_db`
         *   `SECRET_KEY`: `your-random-hex-string-for-session-cookies`
         *   `AWS_IOT_ENDPOINT`: *(Your unique ATS endpoint from IoT Core -> Settings)*
-    *   **Secret Name**: `digiplay/production/env`.
+    *   **Secret Name**: `digiplay/prod/config`.
 3.  **Save**.
 
 ---
@@ -105,7 +105,7 @@ Your EC2 instance needs permission to read the secret you just created.
 2.  **Create Policy**:
     *   **Service**: Secrets Manager.
     *   **Actions**: `GetSecretValue`.
-    *   **Resources**: All / Provide the exact ARN of your secret (`digiplay/production/env`).
+    *   **Resources**: All / Provide the exact ARN of your secret (`digiplay/prod/config`).
     *   **Name**: `DigiPlaySecretsPolicy`.
 3.  **Create Role**:
     *   **Trusted Entity**: AWS Service -> EC2.
