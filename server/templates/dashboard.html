@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigiPlay Admin - Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="brand">
+            <span class="brand-icon">✦</span> DigiPlay
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="active">Dashboard</a>
+            <a href="/devices">Devices</a>
+            <a href="/logout" style="color: var(--danger);">Logout</a>
+        </div>
+    </nav>
+    <main class="container">
+        <h1>Dashboard Overview</h1>
+        <p class="subtitle">Welcome back, Admin. Here is your system hardware snapshot.</p>
+        
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ device_count }}</div>
+                <div class="stat-label">Total Devices</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: var(--success); text-shadow: 0 0 15px rgba(16,185,129,0.5);">{{ online_count }}</div>
+                <div class="stat-label">Online Now</div>
+            </div>
+        </div>
+
+
+    </main>
+</body>
+</html>
