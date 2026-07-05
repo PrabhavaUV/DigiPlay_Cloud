@@ -80,7 +80,6 @@ Instead of storing keys in a `.env` file on the server, we use AWS Secrets Manag
     *   **Secret Type**: "Other type of secret".
     *   **Key/Value Pairs**:
         *   `DATABASE_URL`: `postgresql://postgres:YOUR_PASSWORD@YOUR_RDS_ENDPOINT:5432/digiplay_db`
-        *   `SECRET_KEY`: `your-random-hex-string-for-session-cookies`
         *   `AWS_IOT_ENDPOINT`: *(Your unique ATS endpoint from IoT Core -> Settings)*
     *   **Secret Name**: `digiplay/prod/config`.
 3.  **Save**.
