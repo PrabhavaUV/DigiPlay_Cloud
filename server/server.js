@@ -9,18 +9,9 @@ const { generateDeviceToken } = require('./src/auth');
 const session = require('express-session');
 
 
-/**
- * -------------------------------------------------------------------
- * MQTT BROKER CONFIGURATION
- * -------------------------------------------------------------------
- * We use Aedes as our embedded MQTT broker to handle real-time 
- * communication with the ESP32 hardware displays.
- */
 const mqttServer = net.createServer(aedes.handle);
 const mqttPort = 1883;
 
-
-// Secure the MQTT Broker using the DEVICE_ID as username and DEVICE_TOKEN as password
 aedes.authenticate = async (client, username, password, callback) => {
     if (!username || !password) {
         return callback(new Error('Authentication required (Missing ID or Token)'), false);
@@ -57,7 +48,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
-app.set('mqtt', aedes); // Make aedes accessible in routes
+app.set('mqtt', aedes); 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/static', express.static(path.join(__dirname, 'static')));
@@ -70,11 +61,8 @@ nunjucks.configure('templates', {
 });
 app.set('view engine', 'html');
 
-/**
- * -------------------------------------------------------------------
- * MQTT EVENT HANDLERS (Presence Logic)
- * -------------------------------------------------------------------
- */
+
+
 aedes.on('clientReady', async (client) => {
     if (client.deviceId) {
         console.log(`[MQTT] Presence: Device ${client.deviceId} connected`);
