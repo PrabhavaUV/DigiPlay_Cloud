@@ -145,7 +145,7 @@ sudo apt install -y nodejs git
 
 # Clone your code
 git clone <your-repo>
-cd Version_6/server
+cd DigiPlay_Cloud/server
 npm install
 ```
 
