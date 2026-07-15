@@ -68,6 +68,8 @@ We will use a managed PostgreSQL instance to prevent data loss if the EC2 instan
         *   **Subnet Group**: Create new DB subnet group / Ensure it spans both AZs you created.
         *   **Public Access**: **No** (Connect internally via VPC for best security).
     *   **Security Group**: Create a new SG (`rds-sg`) and ensure it allows Inbound traffic on Port `5432` from your EC2's Security Group.
+    *   Additional configuration
+        *   **initial database name** : digiplay_db
 3.  **Note the Endpoint** (e.g., `digiplay-db.xyz.us-east-1.rds.amazonaws.com`).
 
 ---
