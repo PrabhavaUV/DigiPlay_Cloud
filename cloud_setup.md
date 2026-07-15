@@ -68,7 +68,7 @@ We will use a managed PostgreSQL instance to prevent data loss if the EC2 instan
         *   **Subnet Group**: Create new DB subnet group / Ensure it spans both AZs you created.
         *   **Public Access**: **No** (Connect internally via VPC for best security).
     *   **Security Group**: Create a new SG (`rds-sg`) and ensure it allows Inbound traffic on Port `5432` from your EC2's Security Group.
-    *   Additional configuration
+    *   **Additional configuration**
         *   **initial database name** : digiplay_db
 3.  **Note the Endpoint** (e.g., `digiplay-db.xyz.us-east-1.rds.amazonaws.com`).
 
@@ -91,7 +91,7 @@ Instead of storing keys in a `.env` file on the server, we use AWS Secrets Manag
 ## 📡 Phase 4: Communication (AWS IoT Core)
 
 1.  **Console**: Go to [AWS IoT Console](https://console.aws.amazon.com/iot/).
-2.  **Things**: Go to **Manage** -> **Things** -> **Create things**.
+2.  **Things**: Go to **Manage** -> **Things** -> **Create Single thing**.
 3.  **Name**: `DigiPlay_Display_01`.
 4.  **Certificates**: Select **Auto-generate a new certificate**.
 5.  **Policy**: Create and attach a policy named `DigiPlay_Policy` allowing `iot:Connect`, `iot:Subscribe`, `iot:Receive`, and `iot:Publish`.
